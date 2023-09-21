@@ -1,10 +1,10 @@
 require('shelljs/global');
-var path = require('path');
-var readline = require('readline');
-var fs = require('fs');
-var crossSpawn = require('cross-spawn');
+const path = require('path');
+const readline = require('readline');
+const fs = require('fs');
+const crossSpawn = require('cross-spawn');
 
-var rl;
+let rl;
 
 console.log('\n');
 console.log('┌┬┐┌─┐┌┬┐┌─┐┌─┐┬─┐  ┌┬┐┌─┐┌─┐┬┌─┌┬┐┌─┐┌─┐');
@@ -16,10 +16,10 @@ console.log('\n');
 console.log('This script will git clone other meteor-desktop related repos and create a test' +
     ' application.\n\n');
 
-var projectsDir = path.resolve('./..');
-var resolvedPath;
-var npm = 'npm'; // Or use a custom explicit path, just as path.resolve('./node_modules/.bin/npm');
-var runTests = false;
+const projectsDir = path.resolve('./..');
+const npm = 'npm'; // Or use a custom explicit path, just as path.resolve('./node_modules/.bin/npm')
+let resolvedPath;
+let runTests = false;
 
 console.log('Assuming your projects directory is: ' + projectsDir + '\n\n');
 
@@ -60,10 +60,10 @@ function finish() {
         ' options set in `settings.json` so it will also use linked plugins.');
 }
 
-var cloneMeteorDesktop = false;
-var forks = false;
-var username = '';
-var projects = [ 'meteor-desktop-test-suite', 'meteor-desktop-splash-screen' ];
+let cloneMeteorDesktop = false;
+let forks = false;
+let username = '';
+const projects = [ 'meteor-desktop-test-suite', 'meteor-desktop-splash-screen' ];
 
 question('Do you want to use another path (yes/no [no])? ')
     .then(function(answer) {
@@ -113,7 +113,7 @@ question('Do you want to use another path (yes/no [no])? ')
                 exec('git clone ' + projectRepo);
             });
         } else {
-            var code;
+            let code;
             projects.forEach(function (project) {
                 code = exec('git clone https://github.com/' + username + '/' + project).code;
                 if (code !== 0) {
@@ -175,17 +175,17 @@ question('Do you want to use another path (yes/no [no])? ')
         exec(npm + ' install --save-dev cross-env');
         exec(npm + ' install --save @babel/runtime');
         cd(resolvedPath);
-        var packageJsonPath = path.join(resolvedPath, 'meteor-desktop-test-app', 'package.json');
-        var packageJson = JSON.parse(fs.readFileSync(packageJsonPath), 'utf8');
+        const packageJsonPath = path.join(resolvedPath, 'meteor-desktop-test-app', 'package.json');
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath), 'utf8');
         packageJson.scripts.desktop = 'cross-env METEOR_PACKAGE_DIRS=' + path.join(resolvedPath, 'meteor-desktop', 'plugins') + ' node ../meteor-desktop/dist/bin/cli.js';
-        packageJson.scripts.start = 'cross-env METEOR_PACKAGE_DIRS=' + path.join(resolvedPath, 'meteor-desktop', 'plugins') + ' meteor run' ;
+        packageJson.scripts.start = 'cross-env METEOR_PACKAGE_DIRS=' + path.join(resolvedPath, 'meteor-desktop', 'plugins') + ' meteor run';
         fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
         console.log('Running npm run desktop -- init');
         exec(npm + ' run desktop -- init', { cwd: path.join(resolvedPath, 'meteor-desktop-test-app') });
 
-        var settingsJsonPath = path.join(resolvedPath, 'meteor-desktop-test-app', '.desktop', 'settings.json');
-        var settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath), 'utf8');
+        const settingsJsonPath = path.join(resolvedPath, 'meteor-desktop-test-app', '.desktop', 'settings.json');
+        const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath), 'utf8');
         settingsJson.linkPackages = ['meteor-desktop-splash-screen'];
         fs.writeFileSync(settingsJsonPath, JSON.stringify(settingsJson, null, 2));
 
@@ -216,6 +216,6 @@ question('Do you want to use another path (yes/no [no])? ')
         return spawn(npm, ['run', 'test-desktop'], path.join(resolvedPath, 'meteor-desktop-test-app'));
     })
     .then(function() {
-      finish();
+        finish();
     })
     .catch(function(e) { console.log(e); });
