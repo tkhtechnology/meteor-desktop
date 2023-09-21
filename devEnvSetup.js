@@ -209,10 +209,6 @@ question('Do you want to use another path (yes/no)? ')
     })
     .then(function() {
         if (!runTests) return;
-        return spawn(npm, ['run', 'test'], path.join(resolvedPath, 'meteor-desktop-localstorage'));
-    })
-    .then(function() {
-        if (!runTests) return;
         return spawn(npm, ['run', 'desktop', '--', 'build', '-b'], path.join(resolvedPath, 'meteor-desktop-test-app'));
     })
     .then(function() {
