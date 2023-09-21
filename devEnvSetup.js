@@ -18,7 +18,7 @@ console.log('This script will git clone other meteor-desktop related repos and c
 
 var projectsDir = path.resolve('./..');
 var resolvedPath;
-var npm = path.resolve('./node_modules/.bin/npm');
+var npm = 'npm'; // Or use a custom explicit path, just as path.resolve('./node_modules/.bin/npm');
 
 console.log('Assuming your projects directory is: ' + projectsDir + '\n\n');
 
