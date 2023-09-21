@@ -65,7 +65,7 @@ var forks = false;
 var username = '';
 var projects = [ 'meteor-desktop-test-suite', 'meteor-desktop-splash-screen' ];
 
-question('Do you want to use another path (yes/no)? ')
+question('Do you want to use another path (yes/no [no])? ')
     .then(function(answer) {
         answer = answer.toLowerCase();
         if (answer === 'y' || answer === 'yes') {
@@ -193,7 +193,7 @@ question('Do you want to use another path (yes/no)? ')
     })
     .then(function() {
         console.log('\n\n\n');
-        return question('Do you want to run tests (yes/no)? ');
+        return question('Do you want to run tests (yes/no [yes])? ');
     })
     .then(function(answer) {
         answer = answer.toLowerCase();
