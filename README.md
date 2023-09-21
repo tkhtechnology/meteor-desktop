@@ -33,20 +33,20 @@ To migrate from the original `meteor-desktop`:
 
 <sup>__*1__ you can always build with `--server-only` if you do not want to have mobile clients,  you do not actually have to have android sdk or xcode to go on with your project</sup>
 
-### Quick start
+## Quick start
 ```bash
- cd /your/meteor/app
- meteor npm install --save-dev @meteor-community/meteor-desktop
- # you need to have any mobile platform added (ios/android)
- meteor --mobile-server=127.0.0.1:3000
+cd /your/meteor/app
+meteor npm install --save-dev @meteor-community/meteor-desktop
+meteor add-platform ios # or android
+npm run desktop -- init
 
- # open new terminal
+meteor --mobile-server=127.0.0.1:3000
 
- npm run desktop -- init
- npm run desktop
-
- # or in one command `npm run desktop -- --scaffold`
+# open new terminal
+npm run desktop
 ```
+
+The first time, you can also combine `npm run desktop -- init` and `npm run desktop` into `npm run desktop -- --scaffold` once meteor is running.
 
 ## Usage `--help`
 
