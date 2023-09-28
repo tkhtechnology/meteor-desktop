@@ -188,8 +188,6 @@ question('Do you want to use another path (yes/no [no])? ')
         const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath), 'utf8');
         settingsJson.linkPackages = ['meteor-desktop-splash-screen'];
         fs.writeFileSync(settingsJsonPath, JSON.stringify(settingsJson, null, 2));
-
-        return spawn(npm, ['run', 'desktop', '--', 'init-tests-support'], path.join(resolvedPath, 'meteor-desktop-test-app'));
     })
     .then(function() {
         console.log('\n\n\n');
@@ -210,6 +208,10 @@ question('Do you want to use another path (yes/no [no])? ')
     .then(function() {
         if (!runTests) return;
         return spawn(npm, ['run', 'desktop', '--', 'build', '-b'], path.join(resolvedPath, 'meteor-desktop-test-app'));
+    })
+    .then(function() {
+        if (!runTests) return;
+        return spawn(npm, ['run', 'desktop', '--', 'init-tests-support'], path.join(resolvedPath, 'meteor-desktop-test-app'));
     })
     .then(function() {
         if (!runTests) return;
