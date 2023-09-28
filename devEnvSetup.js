@@ -207,6 +207,10 @@ question('Do you want to use another path (yes/no [no])? ')
     })
     .then(function() {
         if (!runTests) return;
+        // Consider manually running `npm run test-integration` in meteor-desktop/, which also runs
+        // `desktop -- build -b` but tests its output and runs more tests. Not done automatically
+        // here because test-integration creates its own temp meteor project (a different approach
+        // to this script, which uses meteor-desktop-test-app) and overlaps this test here.
         return spawn(npm, ['run', 'desktop', '--', 'build', '-b'], path.join(resolvedPath, 'meteor-desktop-test-app'));
     })
     .then(function() {
