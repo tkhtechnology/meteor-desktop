@@ -594,7 +594,7 @@ export default class App {
 
         this.webContents = this.window.webContents;
 
-        if (this.settings.devtron && !this.isProduction()) {
+        if (!this.isProduction()) {
             this.webContents.on('did-finish-load', () => {
                 // Print some fancy status to the console if in development.
                 this.webContents.executeJavaScript(`
@@ -684,9 +684,6 @@ export default class App {
                 this.emit('beforeLoadFinish');
                 this.window.show();
                 this.window.focus();
-                if (this.settings.devtron && !this.isProduction()) {
-                    this.webContents.executeJavaScript('Desktop.devtron.install()');
-                }
             }
         } else {
             this.l.debug('window already loaded');
