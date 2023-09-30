@@ -151,8 +151,9 @@ describe('desktop', () => {
                 await waitForApp(app);
                 const title = await app.client.getTitle();
                 expect(title).to.equal('test-desktop');
-                const text = await app.client.getText('h1');
-                expect(text).to.equal('Welcome to Meteor!');
+                const h1Element = await app.client.$('h1');
+                const h1Text = await h1Element.getText();
+                expect(h1Text).to.equal('Welcome to Meteor!');
             } catch (e) {
                 console.log(e);
                 console.log(e.trace);
