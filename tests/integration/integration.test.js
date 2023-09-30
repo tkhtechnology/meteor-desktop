@@ -41,7 +41,6 @@ function waitFor(functionReturningPromise, ms = 10000) {
         const invokeFunction = () =>
             functionReturningPromise()
                 .then((result) => {
-                    console.log(result);
                     if (result) {
                         clearTimeout(invokerTimeout);
                         clearTimeout(timeout);
@@ -219,10 +218,10 @@ describe('desktop', () => {
             await runIt();
 
             // Test the exposedModules functionality.
-            const result = await app.client.execute(
+            const currentFrameZoomFactor = await app.client.execute(
                 () => Desktop.electron.webFrame.getZoomFactor()
             );
-            expect(result.value).to.equal(1);
+            expect(currentFrameZoomFactor).to.equal(1);
         }).timeout(10 * 60000);
 
         it('should build installer', async () => {
