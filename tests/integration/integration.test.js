@@ -79,6 +79,28 @@ async function waitForApp(app) {
     return { app, window };
 }
 
+/**
+ * Because the test app's meteor-desktop node module is installed locally, electronBuilder will look
+ * for relative paths in the meteor-desktop project directory instead of in the test app. This leads
+ * to "InvalidConfigurationError: cannot find specified resource" errors.
+ * @param {string} settingJsonPath - path to test app's .desktop/settings.json
+ */
+function makeMandatoryPathsInBuilderSettingsAbsolute(settingJsonPath) {
+    const settingJson = JSON.parse(fs.readFileSync(settingJsonPath));
+
+    const dmgOptions = settingJson && settingJson.builderOptions && settingJson.builderOptions.dmg;
+    if (!dmgOptions) return;
+
+    if (dmgOptions.icon && !path.isAbsolute(dmgOptions.icon)) {
+        dmgOptions.icon = path.join(appDir, dmgOptions.icon);
+    }
+    if (dmgOptions.background && !path.isAbsolute(dmgOptions.background)) {
+        dmgOptions.background = path.join(appDir, dmgOptions.background);
+    }
+
+    fs.writeFileSync(settingJsonPath, JSON.stringify(settingJson, null, 2));
+}
+
 process.env.PLUGIN_VERSION = '1.7.0';
 
 describe('desktop', () => {
@@ -242,6 +264,8 @@ describe('desktop', () => {
             if (fs.existsSync(path.join(appDir, MeteorDesktop.env.paths.installerDir))) {
                 shell.rm('-rf', MeteorDesktop.env.paths.installerDir);
             }
+
+            makeMandatoryPathsInBuilderSettingsAbsolute(MeteorDesktop.env.paths.desktop.settings);
 
             // Build the installer.
             try {
