@@ -584,6 +584,7 @@ export default class App {
 
         windowSettings.webPreferences.nodeIntegration = false; // node integration must to be off
         windowSettings.webPreferences.preload = join(__dirname, 'preload.js');
+        windowSettings.webPreferences.enableRemoteModule = true; // needed since Electron 10
 
         this.currentPort = port;
 
