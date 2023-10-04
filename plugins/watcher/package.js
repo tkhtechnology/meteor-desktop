@@ -16,7 +16,7 @@ Package.onUse(function onUse(api) {
     api.versionsFrom('METEOR@1.4.4.6');
     api.use('ecmascript');
     api.use([
-        'communitypackages:meteor-desktop-bundler@3.1.0',
+        'communitypackages:meteor-desktop-bundler@3.1.1',
     ], ['server'], {
         weak: true
     });
