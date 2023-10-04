@@ -1,12 +1,13 @@
 ## v3.1.2 <sup>XX.XX.2023</sup>
 
-## v3.1.1 <sup>29.09.2023</sup>
+## v3.1.1 <sup>XX.10.2023</sup>
 * Fix issue with single instance, which causes error with opening already opened app on windows
 * Fixes for devEnvSetup.js
 * Fix: do not download new version when desktopHCP is set to false
 * Dynamically get preset-env version
 * Fix addition of desktop script
 * Don't SIGKILL Meteor when a desktop build terminates normally
+* Fix integration tests
 
 ## v3.1.0 <sup>09.03.2022</sup>
 * Updated Electron to v11
