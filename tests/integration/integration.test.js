@@ -101,8 +101,6 @@ function makeMandatoryPathsInBuilderSettingsAbsolute(settingJsonPath) {
     fs.writeFileSync(settingJsonPath, JSON.stringify(settingJson, null, 2));
 }
 
-process.env.PLUGIN_VERSION = '1.7.0';
-
 describe('desktop', () => {
     let MeteorDesktop;
 
