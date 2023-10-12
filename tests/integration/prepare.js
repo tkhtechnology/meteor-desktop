@@ -9,7 +9,7 @@ const fs = require('fs');
 
 const testsTmpPath = path.resolve(path.join(tempDir, '.__tmp_int'));
 
-const meteorVersion = '2.6';
+const meteorVersion = '2.6.1';
 
 shell.config.fatal = true;
 const appDir = path.join(testsTmpPath, 'test-desktop');
