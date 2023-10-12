@@ -1,6 +1,6 @@
 {
   "name": "@meteor-community/meteor-desktop",
-  "version": "3.1.1-rc.0",
+  "version": "3.1.1-rc.1",
   "bin": {
     "meteor-desktop": "dist/bin/cli.js"
   },
@@ -23,7 +23,7 @@
     "postinstall": "npm run build && node dist/scripts/addToScripts || echo",
     "publish-plugins": "(cls || reset) && cd plugins/bundler && (meteor publish --release=METEOR@2.6.1) && cd ../watcher && (meteor publish --release=METEOR@2.6.1)",
     "prepublish": "npm run build || echo",
-    "publish-all": "npm run publish-plugins && npm publish",
+    "publish-all": "npm run publish-plugins && npm prune --production && npm publish",
     "build": "babel lib --out-dir dist --source-maps inline --copy-files",
     "build-watch": "babel lib --watch --out-dir dist --source-maps inline --copy-files",
     "develop": "npm-run-all --parallel build-watch test-watch",
@@ -88,7 +88,7 @@
     "isbinaryfile": "3.0.3",
     "lodash": "4.17.21",
     "md5": "2.3.0",
-    "node-fetch": "^2.7.0",
+    "node-fetch": "2.7.0",
     "regenerator-runtime": "0.14.0",
     "rimraf": "3.0.2",
     "semver": "5.7.2",
