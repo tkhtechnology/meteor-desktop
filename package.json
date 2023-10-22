@@ -1,6 +1,6 @@
 {
   "name": "@meteor-community/meteor-desktop",
-  "version": "3.1.1-rc.2",
+  "version": "3.1.1",
   "bin": {
     "meteor-desktop": "dist/bin/cli.js"
   },
@@ -23,8 +23,8 @@
     "postinstall": "path-exists dist/scripts/addToScripts.js && node dist/scripts/addToScripts || echo",
     "publish-plugins": "(cls || reset) && cd plugins/bundler && (meteor publish --release=METEOR@2.6.1) && cd ../watcher && (meteor publish --release=METEOR@2.6.1)",
     "prepublish": "npm run build || echo",
-    "publish-all": "npm run publish-plugins && npm prune --production && npm publish && meteor npm i",
-    "publish-all-preview": "npm run publish-plugins && npm prune --production && npm publish --tag preview && meteor npm i",
+    "publish-all": "npm run publish-plugins && npm publish && meteor npm i",
+    "publish-all-preview": "npm run publish-plugins && npm publish --tag preview && meteor npm i",
     "build": "babel lib --out-dir dist --source-maps inline --copy-files",
     "build-watch": "babel lib --watch --out-dir dist --source-maps inline --copy-files",
     "develop": "npm-run-all --parallel build-watch test-watch",
