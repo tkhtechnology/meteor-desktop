@@ -325,6 +325,7 @@ event name|payload|description
 `beforfeLoadUrl`|`(port, lastPort)`|emitted before `webContents.loadURL` is invoked, in other words just before loading the Meteor app; `port` - the port on which the app is served, `lastPort` - the port on which the app was served previously (when HCP is applied)
 `beforeReload`|`(pendingVersion, containsDesktopUpdate)`|emitted just before HCP reload
 `moduleLoadFailed`|`(dirName, error)`|emitted if a module failed to load
+`childWindow`|`(openWindowHandlerResult, details)`| emitted when child window is created. Gives possibility to reject or set up BrowserWindowConstructorOptions. For details see [setWindowOpenHandler](https://www.electronjs.org/docs/latest/api/web-contents#contentssetwindowopenhandlerhandler)
 
 Your can also emit events on this bus as well. A good practice is to namespace them using dots,
 like for instance `myModule.initalized`.

@@ -2,6 +2,7 @@
 // This was inspiried by
 // https://github.com/electron-webapps/meteor-electron/blob/master/app/preload.js
 const ipc = require('electron').ipcRenderer;
+const { contextBridge } = require('electron');
 
 const exposedModules = [];
 /**
@@ -290,8 +291,17 @@ const Desktop = new (class {
     getResponseEventName(module, event) {
         return `${this.getEventName(module, event)}___response`;
     }
-})();
 
+    asJSON() {
+        const toIgnore = Object.getOwnPropertyNames({});
+        const methodsName = Object.getOwnPropertyNames(Object.getPrototypeOf(this))
+            .filter((name) => !toIgnore.includes(name))
+            .filter((name) => typeof this[name] === 'function');
+        return methodsName.reduce(
+            (acc, name) => ({ ...acc, [name]: (...args) => this[name](...args) }), {}
+        );
+    }
+})();
 
 process.once('loaded', () => {
     if (process.env.NODE_ENV === 'test') {
@@ -304,6 +314,6 @@ process.once('loaded', () => {
     exposedModules.forEach((module) => {
         Desktop.electron[module] = require('electron')[module];
     });
-
-    global.Desktop = Desktop;
+    // exposeInMainWorld support only plain object with methods declared on first level
+    contextBridge.exposeInMainWorld('Desktop', Desktop.asJSON());
 });
