@@ -82,12 +82,11 @@ const Desktop = new (class {
      */
     addToListeners(module, event, callback, once, response = false) {
         const self = this;
-        const eventName = response ? this.getResponseEventName(module, event) :
-            this.getEventName(module, event);
+        const eventName = response ? this.getResponseEventName(module, event) : this.getEventName(module, event);
 
         function handler(...args) {
             if (eventName in self.eventListeners) {
-                self.eventListeners[eventName].forEach(eventHandler => eventHandler(...args));
+                self.eventListeners[eventName].forEach((eventHandler) => eventHandler(...args));
             }
             if (eventName in self.onceEventListeners) {
                 self.onceEventListeners[eventName].forEach((eventHandler) => {
@@ -219,14 +218,13 @@ const Desktop = new (class {
         const fetchId = this.fetchCallCounter;
 
         return new Promise((resolve, reject) => {
-            this.once(module, `${event}_${fetchId}`,
-                (responseEvent, id, ...responseArgs) => {
-                    if (id === fetchId) {
-                        clearTimeout(this.fetchTimeoutTimers[fetchId]);
-                        delete this.fetchTimeoutTimers[fetchId];
-                        resolve(...responseArgs);
-                    }
-                }, true);
+            this.once(module, `${event}_${fetchId}`, (responseEvent, id, ...responseArgs) => {
+                if (id === fetchId) {
+                    clearTimeout(this.fetchTimeoutTimers[fetchId]);
+                    delete this.fetchTimeoutTimers[fetchId];
+                    resolve(...responseArgs);
+                }
+            }, true);
             this.fetchTimeoutTimers[fetchId] = setTimeout(() => {
                 reject('timeout');
             }, timeout);
@@ -298,7 +296,7 @@ const Desktop = new (class {
             .filter((name) => !toIgnore.includes(name))
             .filter((name) => typeof this[name] === 'function');
         return methodsName.reduce(
-            (acc, name) => ({ ...acc, [name]: (...args) => this[name](...args) }), {}
+            (acc, name) => Object.assign(acc, { [name]: (...args) => this[name](...args) }), {}
         );
     }
 })();
