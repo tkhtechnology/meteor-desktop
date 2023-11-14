@@ -312,15 +312,13 @@ const Desktop = new (class {
     }
 })();
 
-process.once('loaded', () => {
-    if (process.env.NODE_ENV === 'test') {
-        global.electronRequire = require;
-        global.process = process;
-    }
+if (process.env.NODE_ENV === 'test') {
+    global.electronRequire = require;
+    global.process = process;
+}
 
-    exposedModules.forEach((module) => {
-        Desktop.electron[module] = require('electron')[module];
-    });
-    // exposeInMainWorld support only plain object with methods declared on first level
-    contextBridge.exposeInMainWorld('Desktop', Desktop.asJSON());
+exposedModules.forEach((module) => {
+    Desktop.electron[module] = require('electron')[module];
 });
+// exposeInMainWorld support only plain object with methods declared on first level
+contextBridge.exposeInMainWorld('Desktop', Desktop.asJSON());
