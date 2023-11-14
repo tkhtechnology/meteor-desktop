@@ -294,31 +294,33 @@ const Desktop = new (class {
     asJSON() {
         return {
             electron: this.electron,
-            fetch: this.fetch.bind(this),
-            fetchAsset: this.fetchAsset.bind(this),
-            fetchFile: this.fetchFile.bind(this),
-            getAssetUrl: this.getAssetUrl.bind(this),
-            getEventName: this.getEventName.bind(this),
-            getFileUrl: this.getFileUrl.bind(this),
-            on: this.on.bind(this),
-            once: this.once.bind(this),
-            removeAllListeners: this.removeAllListeners.bind(this),
-            removeListener: this.removeListener.bind(this),
-            respond: this.respond.bind(this),
-            send: this.send.bind(this),
-            sendGlobal: this.sendGlobal.bind(this),
-            setDefaultFetchTimeout: this.setDefaultFetchTimeout.bind(this)
+            fetch: (...args) => this.fetch(...args),
+            fetchAsset: (...args) => this.fetchAsset(...args),
+            fetchFile: (...args) => this.fetchFile(...args),
+            getAssetUrl: (...args) => this.getAssetUrl(...args),
+            getEventName: (...args) => this.getEventName(...args),
+            getFileUrl: (...args) => this.getFileUrl(...args),
+            on: (...args) => this.on(...args),
+            once: (...args) => this.once(...args),
+            removeAllListeners: (...args) => this.removeAllListeners(...args),
+            removeListener: (...args) => this.removeListener(...args),
+            respond: (...args) => this.respond(...args),
+            send: (...args) => this.send(...args),
+            sendGlobal: (...args) => this.sendGlobal(...args),
+            setDefaultFetchTimeout: (...args) => this.setDefaultFetchTimeout(...args)
         };
     }
 })();
 
-if (process.env.NODE_ENV === 'test') {
-    global.electronRequire = require;
-    global.process = process;
-}
+process.once('loaded', () => {
+    if (process.env.NODE_ENV === 'test') {
+        global.electronRequire = require;
+        global.process = process;
+    }
 
-exposedModules.forEach((module) => {
-    Desktop.electron[module] = require('electron')[module];
+    exposedModules.forEach((module) => {
+        Desktop.electron[module] = require('electron')[module];
+    });
+    // exposeInMainWorld support only plain object with methods declared on first level
+    contextBridge.exposeInMainWorld('Desktop', Desktop.asJSON());
 });
-// exposeInMainWorld support only plain object with methods declared on first level
-contextBridge.exposeInMainWorld('Desktop', Desktop.asJSON());
