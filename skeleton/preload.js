@@ -1,4 +1,4 @@
-/* eslint-disable global-require */
+/* eslint-disable global-require, no-underscore-dangle */
 // This was inspiried by
 // https://github.com/electron-webapps/meteor-electron/blob/master/app/preload.js
 const ipc = require('electron').ipcRenderer;
@@ -30,8 +30,12 @@ const Desktop = new (class {
         this.fetchCallCounter = 0;
         this.fetchTimeoutTimers = {};
         this.fetchTimeout = 2000;
+        this._electron = {};
     }
 
+    get electron() {
+        return this._electron;
+    }
     /**
      * Just a convenience method for getting an url for a file from the local file system.
      * @param {string} absolutePath - absolute path to the file
@@ -291,12 +295,14 @@ const Desktop = new (class {
     }
 
     asJSON() {
-        const toIgnore = Object.getOwnPropertyNames({});
-        const methodsName = Object.getOwnPropertyNames(Object.getPrototypeOf(this))
-            .filter((name) => !toIgnore.includes(name))
-            .filter((name) => typeof this[name] === 'function');
-        return methodsName.reduce(
-            (acc, name) => Object.assign(acc, { [name]: (...args) => this[name](...args) }), {}
+        const toIgnore = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+        const names = Object.getOwnPropertyNames(Object.getPrototypeOf(this))
+            .filter((name) => !toIgnore.includes(name));
+        return names.reduce(
+            (acc, name) => {
+                acc[name] = typeof this[name] === 'function' ? this[name].bind(this) : this[name];
+                return acc;
+            }, {}
         );
     }
 })();
@@ -306,8 +312,6 @@ process.once('loaded', () => {
         global.electronRequire = require;
         global.process = process;
     }
-
-    Desktop.electron = [];
 
     exposedModules.forEach((module) => {
         Desktop.electron[module] = require('electron')[module];
