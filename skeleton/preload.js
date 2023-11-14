@@ -1,4 +1,4 @@
-/* eslint-disable global-require, no-underscore-dangle */
+/* eslint-disable global-require */
 // This was inspiried by
 // https://github.com/electron-webapps/meteor-electron/blob/master/app/preload.js
 const ipc = require('electron').ipcRenderer;
@@ -30,12 +30,9 @@ const Desktop = new (class {
         this.fetchCallCounter = 0;
         this.fetchTimeoutTimers = {};
         this.fetchTimeout = 2000;
-        this._electron = {};
+        this.electron = {};
     }
 
-    get electron() {
-        return this._electron;
-    }
     /**
      * Just a convenience method for getting an url for a file from the local file system.
      * @param {string} absolutePath - absolute path to the file
@@ -295,15 +292,23 @@ const Desktop = new (class {
     }
 
     asJSON() {
-        const toIgnore = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
-        const names = Object.getOwnPropertyNames(Object.getPrototypeOf(this))
-            .filter((name) => !toIgnore.includes(name));
-        return names.reduce(
-            (acc, name) => {
-                acc[name] = typeof this[name] === 'function' ? this[name].bind(this) : this[name];
-                return acc;
-            }, {}
-        );
+        return {
+            electron: this.electron,
+            fetch: this.fetch.bind(this),
+            fetchAsset: this.fetchAsset.bind(this),
+            fetchFile: this.fetchFile.bind(this),
+            getAssetUrl: this.getAssetUrl.bind(this),
+            getEventName: this.getEventName.bind(this),
+            getFileUrl: this.getFileUrl.bind(this),
+            on: this.on.bind(this),
+            once: this.once.bind(this),
+            removeAllListeners: this.removeAllListeners.bind(this),
+            removeListener: this.removeListener.bind(this),
+            respond: this.respond.bind(this),
+            send: this.send.bind(this),
+            sendGlobal: this.sendGlobal.bind(this),
+            setDefaultFetchTimeout: this.setDefaultFetchTimeout.bind(this)
+        };
     }
 })();
 
