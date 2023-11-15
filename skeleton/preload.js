@@ -293,7 +293,7 @@ const Desktop = new (class {
 
     asJSON() {
         return {
-            electron: this.electron,
+            electron: { webFrame: { getZoomFactor: () => 1 } },
             fetch: (...args) => this.fetch(...args),
             fetchAsset: (...args) => this.fetchAsset(...args),
             fetchFile: (...args) => this.fetchFile(...args),
