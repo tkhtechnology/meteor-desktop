@@ -9,7 +9,7 @@ Package.describe({
 
 Package.registerBuildPlugin({
     name: 'meteor-desktop-bundler',
-    use: ['ecmascript@0.16.3'],
+    use: ['ecmascript@0.16.1'],
     sources: ['bundler.js'],
     npmDependencies: { chokidar: '3.5.3' }
 });
