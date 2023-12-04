@@ -1,7 +1,7 @@
 /* eslint-disable prefer-arrow-callback */
 Package.describe({
     name: 'communitypackages:meteor-desktop-bundler',
-    version: '3.1.1',
+    version: '3.2.0-rc.0',
     summary: 'Bundles .desktop dir into desktop.asar.',
     git: 'https://github.com/Meteor-Community-Packages/meteor-desktop',
     documentation: 'README.md'
@@ -9,7 +9,7 @@ Package.describe({
 
 Package.registerBuildPlugin({
     name: 'meteor-desktop-bundler',
-    use: ['ecmascript@0.4.4'],
+    use: ['ecmascript@0.16.3'],
     sources: ['bundler.js'],
     npmDependencies: { chokidar: '3.5.3' }
 });
