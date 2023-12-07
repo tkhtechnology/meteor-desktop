@@ -1,6 +1,12 @@
-## v3.1.2 <sup>XX.XX.2023</sup>
+## v3.2.0 <sup>07.12.2023</sup>
+* Updated electron to v17
+Make sure to update your electron and electron-builder versions to:
+```
+"electron": "17.4.11",
+"electron-builder": "24.6.4",
+```
 
-## v3.1.1 <sup>XX.10.2023</sup>
+## v3.1.1 <sup>22.10.2023</sup>
 * Fix issue with single instance, which causes error with opening already opened app on windows
 * Fixes for devEnvSetup.js
 * Fix: do not download new version when desktopHCP is set to false

@@ -1,6 +1,6 @@
 {
   "name": "@meteor-community/meteor-desktop",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "bin": {
     "meteor-desktop": "dist/bin/cli.js"
   },
@@ -34,9 +34,9 @@
   "author": "Bartosz Wojtkowiak <bartosz@wojtkowiak.it>",
   "license": "MIT",
   "devDependencies": {
-    "@babel/cli": "7.22.15",
+    "@babel/cli": "7.23.4",
     "@babel/register": "7.22.15",
-    "@meteorjs/reify": "0.25.0",
+    "@meteorjs/reify": "0.25.1",
     "babel-plugin-istanbul": "5.2.0",
     "chai": "3.5.0",
     "chai-as-promised": "6.0.0",
@@ -48,7 +48,7 @@
     "dirty-chai": "1.2.2",
     "eslint": "8.48.0",
     "eslint-config-airbnb-base": "15.0.0",
-    "eslint-plugin-import": "2.28.1",
+    "eslint-plugin-import": "2.29.0",
     "find-port": "2.0.1",
     "fs-extra": "4.0.3",
     "fs-plus": "2.10.1",
@@ -76,10 +76,10 @@
     "watch": "1.0.2"
   },
   "dependencies": {
-    "@babel/core": "7.22.20",
-    "@babel/preset-env": "7.22.20",
-    "@babel/runtime": "7.22.15",
-    "@electron/asar": "3.2.7",
+    "@babel/core": "7.23.5",
+    "@babel/preset-env": "7.23.5",
+    "@babel/runtime": "7.23.5",
+    "@electron/asar": "3.2.8",
     "acorn": "8.10.0",
     "cacache": "17.1.4",
     "commander": "2.20.3",
