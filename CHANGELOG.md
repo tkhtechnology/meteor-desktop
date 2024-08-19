@@ -1,3 +1,7 @@
+## v3.2.1
+* Minor version upgrade of NPM dependencies
+* Fix registering custom 'meteor' scheme [`#39`](https://github.com/Meteor-Community-Packages/meteor-desktop/pull/39) by [@ramijarrar](https://github.com/ramijarrar)
+
 ## v3.2.0 <sup>07.12.2023</sup>
 * Updated electron to v17
 Make sure to update your electron and electron-builder versions to:
