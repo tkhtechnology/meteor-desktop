@@ -228,7 +228,7 @@ class MeteorDesktopBundler {
                 const moduleDir = path.join(modulesPath, module);
                 if (this.fs.lstatSync(moduleDir).isDirectory()) {
                     const moduleConfig = this.getModuleConfig(moduleDir, file);
-                    moduleConfig.dirName = path.parse(module).name || path.basename(module);
+                    moduleConfig.dirName = path.parse?.(module).name || path.basename(module);
                     configs.push(moduleConfig);
                 }
             });
