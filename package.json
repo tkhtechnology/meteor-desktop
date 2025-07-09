@@ -77,10 +77,10 @@
     "watch": "1.0.2"
   },
   "dependencies": {
-    "@babel/core": "7.25.2",
-    "@babel/preset-env": "7.25.3",
-    "@babel/runtime": "7.25.0",
-    "@electron/asar": "3.2.10",
+    "@babel/core": "7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/runtime": "^7.27.6",
+    "@electron/asar": "^4.0.0",
     "acorn": "8.12.1",
     "cacache": "17.1.4",
     "commander": "2.20.3",
