@@ -239,10 +239,12 @@ function shutdownMeteorServer() {
     // meteorServer = null;
 }
 
-function waitForTestToFail(delay) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, delay);
+function raceWithTimeout(testPromise, delay) {
+    let timerId;
+    const timeout = new Promise((resolve) => {
+        timerId = setTimeout(resolve, delay);
     });
+    return Promise.race([testPromise, timeout]).finally(() => clearTimeout(timerId));
 }
 
 function wait(delay) {
@@ -459,12 +461,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'version2', 'version2'),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
 
         it('should not download any files except for the manifest', async () => {
@@ -472,7 +474,7 @@ describe('autoupdate', () => {
             }, 'version2', undefined, showErrors);
             meteorServer.receivedRequests = [];
             autoupdate.checkForUpdates();
-            await waitForTestToFail(500);
+            await wait(500);
             expect(meteorServer.receivedRequests).to.deep.equal([
                 '/__cordova/manifest.json'
             ]);
@@ -511,12 +513,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'version2_with_missing_asset', 'version1', false, false),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
     });
 
@@ -552,12 +554,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'version2_with_invalid_asset', 'version1', false, false),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
     });
 
@@ -593,12 +595,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'version2_with_version_mismatch', 'version1', false, false),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
     });
 
@@ -633,12 +635,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'missing_root_url', 'version1', false, false),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
     });
 
@@ -669,12 +671,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'wrong_root_url', '127.0.0.1_root_url', false, false),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
     });
 
@@ -709,12 +711,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'missing_app_id', 'version1', false, false),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
     });
 
@@ -750,12 +752,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'wrong_app_id', 'version1', false, false),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
     });
 
@@ -791,12 +793,12 @@ describe('autoupdate', () => {
         });
 
         it('should not invoke the onNewVersionReady callback', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'missing_cordova_compatibility_version', 'version1', false, false),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
     });
 
@@ -1018,12 +1020,12 @@ describe('autoupdate', () => {
         });
 
         it('is set to false then should not emit new version', async () => {
-            await Promise.race([
+            await raceWithTimeout(
                 runAutoUpdateTests(() => {
                     throw new Error('onVersionReady invoked unexpectedly');
                 }, 'version2', 'version1', true, false, true, { desktopHCP: false }),
-                waitForTestToFail(1000)
-            ]);
+                1000
+            );
         });
 
         it('is set to true then should emit new version', async () => {

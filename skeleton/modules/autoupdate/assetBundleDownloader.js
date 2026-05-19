@@ -32,10 +32,16 @@
 import fs from 'fs';
 import originalFs from 'original-fs';
 import url from 'url';
-// TODO: maybe use node-fetch?
-import request from 'request';
+import fetch from 'node-fetch';
 import queue from 'queue';
 import IsDesktopInjector from './isDesktopInjector';
+
+// node-fetch returns a Response; buffer() gives us a Buffer (node-fetch v2 API)
+async function fetchBuffer(fetchUrl) {
+    const response = await fetch(fetchUrl);
+    const body = await response.buffer();
+    return { response, body };
+}
 
 export default class AssetBundleDownloader {
     /**
@@ -56,7 +62,6 @@ export default class AssetBundleDownloader {
         this.assetBundle = assetBundle;
         this.baseUrl = baseUrl;
         this.injector = new IsDesktopInjector();
-        this.httpClient = request;
 
         this.eTagWithSha1HashPattern = new RegExp('"([0-9a-f]{40})"');
 
@@ -180,17 +185,15 @@ export default class AssetBundleDownloader {
                 self.assetsDownloading.push(asset);
                 const downloadUrl = self.downloadUrlForAsset(asset);
                 self.queue.push((callback) => {
-                    self.httpClient(
-                        { uri: downloadUrl, encoding: null },
-                        (error, response, body) => {
-                            if (!error) {
-                                onResponse(asset, response, body);
-                            } else {
-                                onFailure(asset, error);
-                            }
+                    fetchBuffer(downloadUrl)
+                        .then(({ response, body }) => {
+                            onResponse(asset, response, body);
                             callback();
-                        }
-                    );
+                        })
+                        .catch((error) => {
+                            onFailure(asset, error);
+                            callback();
+                        });
                 });
             }
         });
@@ -242,9 +245,9 @@ export default class AssetBundleDownloader {
      * @private
      */
     verifyResponse(response, asset, body) {
-        if (response.statusCode !== 200) {
+        if (response.status !== 200) {
             throw new Error(
-                `non-success status code ${response.statusCode} for asset: ${asset.filePath}`
+                `non-success status code ${response.status} for asset: ${asset.filePath}`
             );
         }
 
@@ -253,7 +256,7 @@ export default class AssetBundleDownloader {
         const expectedHash = asset.hash;
 
         if (expectedHash !== null) {
-            const eTag = response.headers.etag;
+            const eTag = response.headers.get('etag');
 
             if (typeof eTag === 'string') {
                 const matches = eTag.match(this.eTagWithSha1HashPattern);

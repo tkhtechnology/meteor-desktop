@@ -34,7 +34,7 @@ import fs from 'fs-plus';
 import rimraf from 'rimraf';
 import originalFs from 'original-fs';
 import url from 'url';
-import request from 'request';
+import fetch from 'node-fetch';
 import shell from 'shelljs';
 
 import AssetBundle from './assetBundle';
@@ -75,8 +75,6 @@ class AssetBundleManager {
         this.callback = null;
         this.assetBundleDownloader = null;
 
-        this.httpClient = request;
-
         this.loadDownloadedAssetBundles();
     }
 
@@ -108,27 +106,26 @@ class AssetBundleManager {
      */
     getDesktopVersion(desktopVersionUrl, callback) {
         if ('desktopHCP' in this.appSettings && this.appSettings.desktopHCP) {
-            this.httpClient(desktopVersionUrl, (error, response, body) => {
-                let desktopVersion = {};
-                if (error) {
+            fetch(desktopVersionUrl)
+                .then(async (response) => {
+                    if (response.status !== 200) {
+                        this.didFail(
+                            `non-success status code ${response.status} for version.desktop.json`
+                        );
+                        return;
+                    }
+                    let desktopVersion = {};
+                    try {
+                        desktopVersion = await response.json();
+                    } catch (e) {
+                        this.didFail(`error parsing version.desktop.json: ${e.message}`);
+                        return;
+                    }
+                    callback(desktopVersion);
+                })
+                .catch((error) => {
                     this.didFail(`error downloading version.desktop.json: ${error}`);
-                    return;
-                }
-                if (response.statusCode !== 200) {
-                    this.didFail(
-                        `non-success status code ${response.statusCode} for version.desktop.json`
-                    );
-                    return;
-                }
-
-                try {
-                    desktopVersion = JSON.parse(body);
-                } catch (e) {
-                    this.didFail(`error parsing version.desktop.json: ${e.message}`);
-                    return;
-                }
-                callback(desktopVersion);
-            });
+                });
         } else {
             callback(null);
         }
@@ -146,106 +143,108 @@ class AssetBundleManager {
 
         this.log.info(`trying to query ${manifestUrl}`);
 
-        this.httpClient(manifestUrl, (error, response, body) => {
-            if (error) {
-                this.didFail(`error downloading asset manifest: ${error}`);
-                return;
-            }
-            if (response.statusCode !== 200) {
-                this.didFail(
-                    `non-success status code ${response.statusCode} for asset manifest`
-                );
-                return;
-            }
+        fetch(manifestUrl)
+            .then(async (response) => {
+                if (response.status !== 200) {
+                    this.didFail(
+                        `non-success status code ${response.status} for asset manifest`
+                    );
+                    return;
+                }
 
-            try {
-                manifest = new AssetManifest(this.log, body);
-            } catch (e) {
-                this.didFail(e.message);
-                return;
-            }
+                const body = await response.text();
 
-            const { version } = manifest;
+                try {
+                    manifest = new AssetManifest(this.log, body);
+                } catch (e) {
+                    this.didFail(e.message);
+                    return;
+                }
 
-            this.log.debug(`downloaded asset manifest for version: ${version}`);
+                const { version } = manifest;
 
-            if (
-                this.assetBundleDownloader !== null &&
-                this.assetBundleDownloader.getAssetBundle().getVersion() === version
-            ) {
-                this.log.info(`already downloading asset bundle version: ${version}`);
-                return;
-            }
+                this.log.debug(`downloaded asset manifest for version: ${version}`);
 
-            // At this point we will check if we need to download the desktop version information.
-            this.getDesktopVersion(desktopVersionUrl, (desktopVersion) => {
-                // Give the callback a chance to decide whether the version should be downloaded.
                 if (
-                    this.callback !== null &&
-                    !this.callback.shouldDownloadBundleForManifest(manifest, desktopVersion)
+                    this.assetBundleDownloader !== null &&
+                    this.assetBundleDownloader.getAssetBundle().getVersion() === version
                 ) {
+                    this.log.info(`already downloading asset bundle version: ${version}`);
                     return;
                 }
 
-                // Cancel download in progress if there is one.
-                if (this.assetBundleDownloader !== null) {
-                    this.assetBundleDownloader.cancel();
-                }
-                this.assetBundleDownloader = null;
-
-                // There is no need to re-download the initial version.
-                if (this.initialAssetBundle.getVersion() === version) {
-                    this.log.debug('No redownload of initial version.');
-                    this.didFinishDownloadingAssetBundle(this.initialAssetBundle, true);
-                    return;
-                }
-
-                // If there is a previously downloaded asset bundle with the requested
-                // version, use that.
-                if (version in this.downloadedAssetBundlesByVersion) {
-                    const downloadedAssetBundle = this.downloadedAssetBundlesByVersion[version];
-                    downloadedAssetBundle.desktopVersion = desktopVersion;
-                    if (downloadedAssetBundle !== null) {
-                        this.didFinishDownloadingAssetBundle(downloadedAssetBundle);
+                // At this point we will check if we need to download the desktop version information.
+                this.getDesktopVersion(desktopVersionUrl, (desktopVersion) => {
+                    // Give the callback a chance to decide whether the version should be downloaded.
+                    if (
+                        this.callback !== null &&
+                        !this.callback.shouldDownloadBundleForManifest(manifest, desktopVersion)
+                    ) {
                         return;
                     }
-                }
 
-                // Else, get ready to download the new asset bundle
-                this.moveExistingDownloadDirectoryIfNeeded();
+                    // Cancel download in progress if there is one.
+                    if (this.assetBundleDownloader !== null) {
+                        this.assetBundleDownloader.cancel();
+                    }
+                    this.assetBundleDownloader = null;
 
-                // Create download directory
-                if (!this.makeDownloadDirectory()) {
-                    this.didFail('could not create download directory');
-                    return;
-                }
+                    // There is no need to re-download the initial version.
+                    if (this.initialAssetBundle.getVersion() === version) {
+                        this.log.debug('No redownload of initial version.');
+                        this.didFinishDownloadingAssetBundle(this.initialAssetBundle, true);
+                        return;
+                    }
 
-                // Copy downloaded asset manifest to file.
-                try {
-                    fs.writeFileSync(path.join(this.downloadDirectory, 'program.json'), body);
-                } catch (e) {
-                    this.didFail(e.message);
-                    return;
-                }
-                this.log.debug('manifest copied to new Download dir');
+                    // If there is a previously downloaded asset bundle with the requested
+                    // version, use that.
+                    if (version in this.downloadedAssetBundlesByVersion) {
+                        const downloadedAssetBundle = this.downloadedAssetBundlesByVersion[version];
+                        downloadedAssetBundle.desktopVersion = desktopVersion;
+                        if (downloadedAssetBundle !== null) {
+                            this.didFinishDownloadingAssetBundle(downloadedAssetBundle);
+                            return;
+                        }
+                    }
 
-                let assetBundle = null;
-                try {
-                    assetBundle = new AssetBundle(
-                        this.log,
-                        this.downloadDirectory,
-                        manifest,
-                        this.initialAssetBundle,
-                        desktopVersion === null ? undefined : desktopVersion
-                    );
-                } catch (e) {
-                    this.didFail(e.message);
-                    return;
-                }
+                    // Else, get ready to download the new asset bundle
+                    this.moveExistingDownloadDirectoryIfNeeded();
 
-                this.downloadAssetBundle(assetBundle, baseUrl);
+                    // Create download directory
+                    if (!this.makeDownloadDirectory()) {
+                        this.didFail('could not create download directory');
+                        return;
+                    }
+
+                    // Copy downloaded asset manifest to file.
+                    try {
+                        fs.writeFileSync(path.join(this.downloadDirectory, 'program.json'), body);
+                    } catch (e) {
+                        this.didFail(e.message);
+                        return;
+                    }
+                    this.log.debug('manifest copied to new Download dir');
+
+                    let assetBundle = null;
+                    try {
+                        assetBundle = new AssetBundle(
+                            this.log,
+                            this.downloadDirectory,
+                            manifest,
+                            this.initialAssetBundle,
+                            desktopVersion === null ? undefined : desktopVersion
+                        );
+                    } catch (e) {
+                        this.didFail(e.message);
+                        return;
+                    }
+
+                    this.downloadAssetBundle(assetBundle, baseUrl);
+                });
+            })
+            .catch((error) => {
+                this.didFail(`error downloading asset manifest: ${error}`);
             });
-        });
     }
 
     /**
