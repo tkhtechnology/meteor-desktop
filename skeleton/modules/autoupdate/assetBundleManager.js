@@ -33,9 +33,22 @@ import path from 'path';
 import fs from 'fs-plus';
 import rimraf from 'rimraf';
 import originalFs from 'original-fs';
+import http from 'http';
+import https from 'https';
 import url from 'url';
-import fetch from 'node-fetch';
 import shell from 'shelljs';
+
+function httpGet(fetchUrl) {
+    return new Promise((resolve, reject) => {
+        const transport = fetchUrl.startsWith('https') ? https : http;
+        transport.get(fetchUrl, (res) => {
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
+            res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
+            res.on('error', reject);
+        }).on('error', reject);
+    });
+}
 
 import AssetBundle from './assetBundle';
 import AssetBundleDownloader from './assetBundleDownloader';
@@ -106,17 +119,17 @@ class AssetBundleManager {
      */
     getDesktopVersion(desktopVersionUrl, callback) {
         if ('desktopHCP' in this.appSettings && this.appSettings.desktopHCP) {
-            fetch(desktopVersionUrl)
-                .then(async (response) => {
-                    if (response.status !== 200) {
+            httpGet(desktopVersionUrl)
+                .then(({ status, body }) => {
+                    if (status !== 200) {
                         this.didFail(
-                            `non-success status code ${response.status} for version.desktop.json`
+                            `non-success status code ${status} for version.desktop.json`
                         );
                         return;
                     }
                     let desktopVersion = {};
                     try {
-                        desktopVersion = await response.json();
+                        desktopVersion = JSON.parse(body.toString('utf8'));
                     } catch (e) {
                         this.didFail(`error parsing version.desktop.json: ${e.message}`);
                         return;
@@ -143,16 +156,16 @@ class AssetBundleManager {
 
         this.log.info(`trying to query ${manifestUrl}`);
 
-        fetch(manifestUrl)
-            .then(async (response) => {
-                if (response.status !== 200) {
+        httpGet(manifestUrl)
+            .then(({ status, body: rawBody }) => {
+                if (status !== 200) {
                     this.didFail(
-                        `non-success status code ${response.status} for asset manifest`
+                        `non-success status code ${status} for asset manifest`
                     );
                     return;
                 }
 
-                const body = await response.text();
+                const body = rawBody.toString('utf8');
 
                 try {
                     manifest = new AssetManifest(this.log, body);

@@ -30,17 +30,24 @@
  */
 
 import fs from 'fs';
+import http from 'http';
+import https from 'https';
 import originalFs from 'original-fs';
 import url from 'url';
-import fetch from 'node-fetch';
 import queue from 'queue';
 import IsDesktopInjector from './isDesktopInjector';
 
-// node-fetch returns a Response; buffer() gives us a Buffer (node-fetch v2 API)
-async function fetchBuffer(fetchUrl) {
-    const response = await fetch(fetchUrl);
-    const body = await response.buffer();
-    return { response, body };
+// Uses built-in http/https — no external dependency needed.
+function httpGet(fetchUrl) {
+    return new Promise((resolve, reject) => {
+        const transport = fetchUrl.startsWith('https') ? https : http;
+        transport.get(fetchUrl, (res) => {
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
+            res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
+            res.on('error', reject);
+        }).on('error', reject);
+    });
 }
 
 export default class AssetBundleDownloader {
@@ -185,9 +192,9 @@ export default class AssetBundleDownloader {
                 self.assetsDownloading.push(asset);
                 const downloadUrl = self.downloadUrlForAsset(asset);
                 self.queue.push((callback) => {
-                    fetchBuffer(downloadUrl)
-                        .then(({ response, body }) => {
-                            onResponse(asset, response, body);
+                    httpGet(downloadUrl)
+                        .then(({ status, headers, body }) => {
+                            onResponse(asset, { status, headers }, body);
                             callback();
                         })
                         .catch((error) => {
@@ -256,7 +263,7 @@ export default class AssetBundleDownloader {
         const expectedHash = asset.hash;
 
         if (expectedHash !== null) {
-            const eTag = response.headers.get('etag');
+            const eTag = response.headers.etag || null;
 
             if (typeof eTag === 'string') {
                 const matches = eTag.match(this.eTagWithSha1HashPattern);
