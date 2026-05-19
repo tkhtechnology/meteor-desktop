@@ -30,12 +30,25 @@
  */
 
 import fs from 'fs';
+import http from 'http';
+import https from 'https';
 import originalFs from 'original-fs';
 import url from 'url';
-// TODO: maybe use node-fetch?
-import request from 'request';
 import queue from 'queue';
 import IsDesktopInjector from './isDesktopInjector';
+
+// Uses built-in http/https — no external dependency needed.
+function httpGet(fetchUrl) {
+    return new Promise((resolve, reject) => {
+        const transport = fetchUrl.startsWith('https') ? https : http;
+        transport.get(fetchUrl, (res) => {
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
+            res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
+            res.on('error', reject);
+        }).on('error', reject);
+    });
+}
 
 export default class AssetBundleDownloader {
     /**
@@ -56,7 +69,6 @@ export default class AssetBundleDownloader {
         this.assetBundle = assetBundle;
         this.baseUrl = baseUrl;
         this.injector = new IsDesktopInjector();
-        this.httpClient = request;
 
         this.eTagWithSha1HashPattern = new RegExp('"([0-9a-f]{40})"');
 
@@ -180,17 +192,15 @@ export default class AssetBundleDownloader {
                 self.assetsDownloading.push(asset);
                 const downloadUrl = self.downloadUrlForAsset(asset);
                 self.queue.push((callback) => {
-                    self.httpClient(
-                        { uri: downloadUrl, encoding: null },
-                        (error, response, body) => {
-                            if (!error) {
-                                onResponse(asset, response, body);
-                            } else {
-                                onFailure(asset, error);
-                            }
+                    httpGet(downloadUrl)
+                        .then(({ status, headers, body }) => {
+                            onResponse(asset, { status, headers }, body);
                             callback();
-                        }
-                    );
+                        })
+                        .catch((error) => {
+                            onFailure(asset, error);
+                            callback();
+                        });
                 });
             }
         });
@@ -242,9 +252,9 @@ export default class AssetBundleDownloader {
      * @private
      */
     verifyResponse(response, asset, body) {
-        if (response.statusCode !== 200) {
+        if (response.status !== 200) {
             throw new Error(
-                `non-success status code ${response.statusCode} for asset: ${asset.filePath}`
+                `non-success status code ${response.status} for asset: ${asset.filePath}`
             );
         }
 
@@ -253,7 +263,7 @@ export default class AssetBundleDownloader {
         const expectedHash = asset.hash;
 
         if (expectedHash !== null) {
-            const eTag = response.headers.etag;
+            const eTag = response.headers.etag || null;
 
             if (typeof eTag === 'string') {
                 const matches = eTag.match(this.eTagWithSha1HashPattern);

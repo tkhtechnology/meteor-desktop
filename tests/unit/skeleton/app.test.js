@@ -3,9 +3,7 @@ import chai from 'chai';
 import dirty from 'dirty-chai';
 import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
-import mockery from 'mockery';
-
-import mockerySettings from '../../helpers/mockerySettings';
+import proxyquire from 'proxyquire';
 
 chai.use(sinonChai);
 chai.use(dirty);
@@ -17,23 +15,24 @@ const {
 } = global;
 const { expect } = chai;
 
-const Electron = { protocol: { registerStandardSchemes: Function.prototype } };
-const Winston = {};
+const Electron = { protocol: { registerStandardSchemes: Function.prototype }, '@noCallThru': true, '@global': true };
+const Winston = { '@noCallThru': true, '@global': true };
+const fs = { '@noCallThru': true, '@global': true };
 
 let App;
 
-const fs = {};
-
 describe('App', () => {
     before(() => {
-        mockery.registerMock('electron', Electron);
-        mockery.registerMock('winston', Winston);
-        mockery.registerMock('./desktopPathResolver', {});
-        mockery.registerMock('fs-plus', fs);
-        mockery.enable(mockerySettings);
         process.env.METEOR_DESKTOP_UNIT_TEST = true;
-        App = require('../../../skeleton/app.js');
-        App = App.default;
+        App = proxyquire('../../../skeleton/app.js', {
+            electron: Electron,
+            winston: Winston,
+            './desktopPathResolver': { '@noCallThru': true, default: {} },
+            'fs-plus': fs,
+            shelljs: { '@noCallThru': true, '@global': true },
+            'windows-shortcuts': { '@noCallThru': true, '@global': true },
+            'electron-debug': { '@noCallThru': true, '@global': true }
+        }).default;
         // We will get a transpiled version here with a babel function upfront.
         // The code below injects empty constructor and restores the prototype which effectively
         // will allow us to invoke it with `new` and do what we want without calling the internal
@@ -45,11 +44,6 @@ describe('App', () => {
 
     after(() => {
         process.env.METEOR_DESKTOP_UNIT_TEST = false;
-        mockery.deregisterMock('./desktopPathResolver');
-        mockery.deregisterMock('fs-plus');
-        mockery.deregisterMock('electron');
-        mockery.deregisterMock('winston');
-        mockery.disable();
     });
 
     describe('#emitAsync', () => {
@@ -140,4 +134,3 @@ describe('App', () => {
         });
     });
 });
-

@@ -4,10 +4,7 @@ import dirty from 'dirty-chai';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
-import mockery from 'mockery';
-import importFresh from 'import-fresh';
-
-import mockerySettings from '../../../helpers/mockerySettings';
+import proxyquire from 'proxyquire';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -20,9 +17,9 @@ const {
 } = global;
 const { expect } = chai;
 
-const fs = { };
-const fsExtra = { };
-const shelljs = { };
+const fs = {};
+const fsExtra = {};
+const shelljs = {};
 let rimrafResult = true;
 const rimraf = (path, options, callback) => callback(rimrafResult ? undefined : 'error');
 
@@ -30,20 +27,16 @@ let ioHelper;
 
 describe('ioHelper', () => {
     before(() => {
-        mockery.registerMock('fs-plus', fs);
-        mockery.registerMock('shelljs', shelljs);
-        mockery.registerMock('rimraf', rimraf);
-        mockery.registerMock('fs-extra', fsExtra);
-        mockery.enable(mockerySettings);
-        ioHelper = importFresh('../../../../skeleton/modules/storageMigration/ioHelper.js');
-    });
-
-    after(() => {
-        mockery.deregisterMock('fs-plus');
-        mockery.deregisterMock('shelljs');
-        mockery.deregisterMock('rimraf');
-        mockery.deregisterMock('fs-extra');
-        mockery.disable();
+        fs['@noCallThru'] = true;
+        fsExtra['@noCallThru'] = true;
+        shelljs['@noCallThru'] = true;
+        rimraf['@noCallThru'] = true;
+        ioHelper = proxyquire('../../../../skeleton/modules/storageMigration/ioHelper.js', {
+            'fs-plus': fs,
+            shelljs,
+            rimraf,
+            'fs-extra': fsExtra
+        });
     });
 
     describe('#findNewestFileOrDirectory', () => {

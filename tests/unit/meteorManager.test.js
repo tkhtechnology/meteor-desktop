@@ -1,38 +1,21 @@
-/* eslint-disable import/extensions, import/no-extraneous-dependencies, global-require */
 import chai from 'chai';
 import dirty from 'dirty-chai';
 import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
-import mockery from 'mockery';
-import importFresh from 'import-fresh';
+import proxyquire from 'proxyquire';
 
 chai.use(sinonChai);
 chai.use(dirty);
 const {
-    describe, it, after, before
+    describe, it, before
 } = global;
 const { expect } = chai;
 
 const fs = {};
 const METEOR_APP_CONTEXT = { env: { paths: { meteorApp: { root: 'root.path', packages: 'package.file', versions: 'version.file' } } } };
 
-let MeteorManager;
-
 describe('meteorManager', () => {
-    before(() => {
-        mockery.registerMock('fs', fs);
-        mockery.enable({
-            warnOnReplace: false,
-            warnOnUnregistered: false
-        });
-
-        MeteorManager = importFresh('../../lib/meteorManager.js').default;
-    });
-
-    after(() => {
-        mockery.deregisterMock('fs');
-        mockery.disable();
-    });
+    const MeteorManager = proxyquire('../../lib/meteorManager.js', { fs }).default;
 
     function prepareFsStubs() {
         const readFileSyncStub = sinon.stub();
