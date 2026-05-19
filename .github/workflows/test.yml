@@ -85,6 +85,8 @@ jobs:
             ~/.meteor
             ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+      - name: Add Meteor to PATH
+        run: echo "$HOME/.meteor" >> $GITHUB_PATH
       - run: npm run prepare-integration-tests
       - name: Run test-integration script (using Xvfb)
         uses: coactions/setup-xvfb@v1
