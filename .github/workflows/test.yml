@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Get Cache dependencies
         uses: actions/cache@v4
         id: files-cache
@@ -30,11 +34,11 @@ jobs:
       - name: Install NPM Dependencies
         # Creates dist/ through postinstall->build script
         if: steps.files-cache.outputs.cache-hit != 'true'
-        run: ~/.meteor/meteor npm ci
+        run: npm ci
       - name: Run build script
         # Make sure dist/ is up-to-date when package-lock.json hasn't changed
         if: steps.files-cache.outputs.cache-hit == 'true'
-        run: ~/.meteor/meteor npm run build
+        run: npm run build
 
   unit-tests:
     needs: build
@@ -42,6 +46,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Get Cache dependencies
         uses: actions/cache@v4
         id: files-cache
@@ -54,27 +62,11 @@ jobs:
             ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
       - name: Run test script
-        run: ~/.meteor/meteor npm run test
+        run: npm run test
 
-  integration-tests:
-    needs: build
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Get Cache dependencies
-        uses: actions/cache@v4
-        id: files-cache
-        with:
-          path: |
-            dist
-            node_modules
-            /tmp/.__tmp_int
-            ~/.meteor
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-      - run: ~/.meteor/meteor npm run prepare-integration-tests
-      - name: Run test-integration script (using Xvfb)
-        uses: coactions/setup-xvfb@v1
-        with: # needs full path to meteor
-          run: /home/runner/.meteor/meteor npm run test-integration
+  # Integration tests are disabled: spectron (required for Electron E2E) was
+  # removed due to unpatched CVEs and is abandoned since 2021. Tests need to
+  # be rewritten with a supported alternative before re-enabling this job.
+  # integration-tests:
+  #   needs: build
+  #   name: Integration Tests

@@ -1,37 +1,20 @@
-/* eslint-disable global-require */
 import chai from 'chai';
 import dirty from 'dirty-chai';
 import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
-import mockery from 'mockery';
+import proxyquire from 'proxyquire';
 import path from 'path';
-
-import mockerySettings from '../../helpers/mockerySettings';
 
 chai.use(sinonChai);
 chai.use(dirty);
 
-const {
-    describe, it, after, before
-} = global;
+const { describe, it } = global;
 const { expect } = chai;
 
 const fs = {};
 
-let DesktopPathResolver;
-
 describe('DesktopPathResolver', () => {
-    before(() => {
-        mockery.registerMock('fs', fs);
-        mockery.enable(mockerySettings);
-
-        DesktopPathResolver = require('../../../skeleton/desktopPathResolver.js').default;
-    });
-
-    after(() => {
-        mockery.deregisterMock('fs');
-        mockery.disable();
-    });
+    const DesktopPathResolver = proxyquire('../../../skeleton/desktopPathResolver.js', { fs }).default;
 
     describe('#resolveDesktopPath', () => {
         let readFileSyncStub;

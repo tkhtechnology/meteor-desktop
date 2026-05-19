@@ -6,10 +6,10 @@ skip_tags: true
 
 environment:
   matrix:
-    - nodejs_version: "14"
+    - nodejs_version: "20"
       test: "normal"
       platform: x64
-    - nodejs_version: "14"
+    - nodejs_version: "20"
       test: "integration"
       platform: x64
 
@@ -24,7 +24,7 @@ cache:
 
 install:
   - ps: Install-Product node $env:nodejs_version
-  - npm install -g npm@6
+  - npm install -g npm@10
   - npm prune
   - npm install
   - ps: >-
