@@ -17,7 +17,7 @@
     "prepare-integration-tests": "node tests/integration/prepare.js",
     "coverage-html": "nyc report --reporter=lcov",
     "coverage": "nyc report --reporter=text",
-    "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
+    "report-coverage": "nyc report --reporter=lcov",
     "version": "node dist/scripts/propagateVersion.js && git add plugins",
     "postversion": "npm run publish-all",
     "postinstall": "path-exists dist/scripts/addToScripts.js && node dist/scripts/addToScripts || echo",
@@ -41,7 +41,6 @@
     "babel-plugin-istanbul": "5.2.0",
     "chai": "3.5.0",
     "chai-as-promised": "6.0.0",
-    "codecov": "3.8.3",
     "connect": "3.7.0",
     "connect-modrewrite": "0.10.2",
     "cross-env": "10.1.0",
@@ -65,7 +64,6 @@
     "sha1-file": "1.0.4",
     "sinon": "2.4.1",
     "sinon-chai": "2.14.0",
-    "spectron": "19.0.0",
     "temp-dir": "2.0.0"
   },
   "dependencies": {
@@ -90,6 +88,10 @@
     "shelljs": "0.8.5",
     "single-line-log": "1.1.2",
     "terser": "4.8.1"
+  },
+  "overrides": {
+    "diff": ">=8.0.3",
+    "serialize-javascript": ">=7.0.5"
   },
   "peerDependencies": {
     "app-builder-lib": "*",
