@@ -1,9 +1,8 @@
-/* eslint-disable global-require, import/extensions */
 import chai from 'chai';
 import dirty from 'dirty-chai';
 import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
-import mockery from 'mockery';
+import proxyquire from 'proxyquire';
 
 // need for running test
 import asar from '@electron/asar'; // eslint-disable-line no-unused-vars
@@ -11,9 +10,7 @@ import asar from '@electron/asar'; // eslint-disable-line no-unused-vars
 chai.use(sinonChai);
 chai.use(dirty);
 
-const {
-    describe, it, before, after
-} = global;
+const { describe, it } = global;
 const { expect } = chai;
 
 const fs = {};
@@ -26,22 +23,8 @@ const METEOR_RELEASES = [
     { release: 'METEOR@1.6.0.1\r\n\r\n', version: '1.6.0.1', semver: '1.6.0' }
 ];
 
-let MeteorApp;
-
 describe('meteorApp', () => {
-    before(() => {
-        mockery.registerMock('fs', fs);
-        mockery.enable({
-            warnOnReplace: false,
-            warnOnUnregistered: false
-        });
-        MeteorApp = require('../../lib/meteorApp.js').default;
-    });
-
-    after(() => {
-        mockery.deregisterMock('fs');
-        mockery.disable();
-    });
+    const MeteorApp = proxyquire('../../lib/meteorApp.js', { fs }).default;
 
     function prepareFsStubs(release) {
         const readFileSyncStub = sinon.stub();

@@ -285,8 +285,8 @@ export default class LocalServer {
             }
             return send(
                 req,
-                encodeURIComponent(asset.getFile()),
-                { etag: false, cacheControl: false }
+                path.basename(asset.getFile()),
+                { root: path.dirname(asset.getFile()), etag: false, cacheControl: false }
             )
                 .on('file', processors)
                 .pipe(res);
@@ -320,7 +320,7 @@ export default class LocalServer {
             if (fs.existsSync(filePath)) {
                 return local ?
                     createStreamProtocolResponse(filePath, res, () => {}) :
-                    send(req, encodeURIComponent(filePath)).pipe(res);
+                    send(req, path.basename(filePath), { root: path.dirname(filePath) }).pipe(res);
             }
             return next();
         }
@@ -360,7 +360,7 @@ export default class LocalServer {
             if (fs.existsSync(filePath)) {
                 return local ?
                     createStreamProtocolResponse(filePath, res, () => {}) :
-                    send(req, encodeURIComponent(filePath)).pipe(res);
+                    send(req, path.basename(filePath), { root: path.dirname(filePath) }).pipe(res);
             }
             return local ? res.setStatusCode(404) : respondWithCode(res, 404, 'File does not exist.');
         }
@@ -412,7 +412,7 @@ export default class LocalServer {
                     createStreamProtocolResponse(indexFile.getFile(), res, () => {
                     });
                 } else {
-                    send(req, encodeURIComponent(indexFile.getFile())).pipe(res);
+                    send(req, path.basename(indexFile.getFile()), { root: path.dirname(indexFile.getFile()) }).pipe(res);
                 }
             } else {
                 next();

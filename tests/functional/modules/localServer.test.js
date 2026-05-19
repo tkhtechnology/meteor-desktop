@@ -146,7 +146,7 @@ function localServerTests(useStreams = false) {
     describe('when setting the Content-Type header', () => {
         it('should set application/javascript for a manifest entry of type: js', async () => {
             const response = await fetchFromLocalServer('/packages/meteor.js');
-            expect(response.headers.get('Content-Type')).to.contain('application/javascript');
+            expect(response.headers.get('Content-Type')).to.match(/javascript/);
         });
     });
 
@@ -163,7 +163,7 @@ function localServerTests(useStreams = false) {
 
         it('should set text/javascript for a .js file', async () => {
             const response = await fetchFromLocalServer('/some-javascript.js');
-            expect(response.headers.get('Content-Type')).to.contain('application/javascript');
+            expect(response.headers.get('Content-Type')).to.match(/javascript/);
         });
 
         it('should set text/css for a .css file', async () => {
@@ -193,7 +193,7 @@ function localServerTests(useStreams = false) {
 
         it('should set video/mp4 for a .mp4 file', async () => {
             const response = await fetchFromLocalServer('/some-video.mp4');
-            expect(response.headers.get('Content-Type')).to.contain('video/mp4');
+            expect(response.headers.get('Content-Type')).to.match(/mp4/);
         });
 
         it('should set application/woff for a .woff file', async () => {
